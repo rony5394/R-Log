@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LOGIN</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column
+        }
+
+        .container {
+            display: flex;
+            max-width: 800px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        .form {
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            width: 45%;
+            margin-right: 20px;
+        }
+
+        .form:last-child {
+            margin-right: 0;
+        }
+
+        label {
+            font-size: 1.2em;
+            color: #333;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #3498db;
+        }
+
+        input[type="submit"] {
+            background-color: #3498db;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            padding: 12px;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #eee;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+            cursor: pointer;
+            font-weight: bold;
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form method="post" action="index.php" class="form" id="login">
+            <label>LOGIN</label>
+            <input type="text" name="username" placeholder="Username" id="username" required>
+            <input type="password" name="password" placeholder="Password" id="password" required>
+            <input type="submit" value="Login">
+        </form>
+        <form method="post" action="index.php" class="form">
+            <label>REGISTER</label>
+            <input type="text" name="username" placeholder="Username">
+            <input type="email" name="email" placeholder="Email">
+            <input type="password" name="password" placeholder="Password">
+            <input type="submit" value="Register">
+        </form>
+    </div>
+    <hr>
+    <a onclick="openLoginPopup()" target="_blank">LoginPopup</a>
+    <script>
+        document.addEventListener("keydown", function (event) {
+            if (document.cookie) {}
+            if (event.key === "Tab") {
+                event.preventDefault();
+                loginWithFile();
+            }
+        });
+    </script>
+    <script type="text/javascript" src="<|js_import_url|>"></script>
+</body>
+</html>
