@@ -2,6 +2,7 @@
 require_once("api.php");
 session_start();
 
+
 // Enable beta auth
 if($_SERVER['SERVER_PORT'] == 89)
 {
@@ -12,9 +13,11 @@ if($_SERVER['SERVER_PORT'] == 89)
         exit();
     }
 
-    $activeKeys = explode(";", file_get_contents("secrets/beta_keys.txt"));
+    $activeKeys = explode(";", file_get_contents("./../secrets/beta_keys.txt"));
 
     if (!in_array($_SERVER['PHP_AUTH_PW'], $activeKeys)){
+        header('WWW-Authenticate: Basic realm="LoginTest"');
+        header('HTTP/1.0 401 Unauthorized');
         exit();
     }
 
@@ -68,13 +71,17 @@ if ($R_Log->isLoginned() == true) {
     }
 
     $myIp = $_SERVER['HTTP_HOST'];
+    if (!strpos($myIp, ":89")) {
+        $myIp = $myIp . ":89";
+    }
 
     $js_import_url = "$protocol://$myIp/loginApi/api.js";
+    $static_import_url = "$protocol://$myIp/static";
 //
 
 $login_web = str_replace(["<|js_import_url|>"], [$js_import_url], file_get_contents("./html/login.html"));
 
-$panel_web = str_replace(["<|user->username|>","<|user->permission|>","<|user->userid|>","<|adminPanel|>"], [$user->username,$user->permission,$user->userid,$adminPanel], file_get_contents("./html/panel.html"));
+$panel_web = str_replace(["<|user->username|>","<|user->permission|>","<|user->userid|>","<|adminPanel|>", "<|static_import_url|>"], [$user->username,$user->permission,$user->userid,$adminPanel, $static_import_url], file_get_contents("./html/panel.html"));
 
 
 if ($R_Log->isLoginned() == true) {

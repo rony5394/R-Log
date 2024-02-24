@@ -5,3 +5,4 @@
 705 - api server / api DB error
 706 - invalid user id
 707 - token not provided
+708 - already enabled 2fa

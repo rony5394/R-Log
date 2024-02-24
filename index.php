@@ -1,5 +1,5 @@
 <?php
-if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+if ($_SERVER['REQUEST_METHOD'] == 'GET' && !isset($_GET['name'])) {
 	echo("<a href='Example/'>Click here</a>");
 	exit();
 }
@@ -18,6 +18,7 @@ function encryptToken($token){
 }
 
 function error($error_code){
+	global $conn;
 	echo "ERROR:". $error_code;
 	$conn->close();
 	exit();
@@ -53,6 +54,7 @@ function createApiUser($name){
 	email VARCHAR(50),
 	permissions VARCHAR(10) DEFAULT 'user',
 	reg_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	mfa VARCHAR(16) NOT NULL DEFAULT 'disabled',
 	UNIQUE (username,email)
 	)";
 
@@ -160,6 +162,32 @@ function setUserPermission($api_token,$userid,$new_perm){
 	echo "[OK]";
 }
 
+function enable2fa($api_token,$userid,$mode)
+{
+	global $conn;
+	$api_token = mysqli_real_escape_string($conn, $api_token);
+	$userid = mysqli_real_escape_string($conn,$userid);
+	$mode = mysqli_real_escape_string($conn,$mode);
+
+	// Check if user already has mfa enabled
+	$sql = "SELECT id, mfa FROM $api_token WHERE userid='$userid'";
+	$result = $conn->query($sql);
+
+	if ($result->num_rows != 1)
+	{
+		error(706);
+	}
+	while($row = $result->fetch_assoc())
+	{
+		if ($row['mfa'] != "disabled") {
+			error(708);
+		}
+	}
+
+	include "./ServerLibs/totp.php";
+	
+}
+
 function checkApiKey($api_token){
 	global $conn;
 	$api_token = mysqli_real_escape_string($conn,$api_token);
@@ -234,6 +262,16 @@ if(isset($_POST['command']) && (isset($_POST['token']) || $_SERVER['PHP_AUTH_USE
 				error(702);
 			}
 		break;
+		case 'E2FA':
+			if(isset($_POST['userid']) && isset($_POST['mode']))
+			{
+
+			}
+			else
+			{
+				error(702);
+			}
+		break;
 		case 'CHECK':
 			echo var_dump(checkApiKey($api_token));
 		break;
@@ -242,7 +280,7 @@ if(isset($_POST['command']) && (isset($_POST['token']) || $_SERVER['PHP_AUTH_USE
 			break;
 	}
 }
-elseif (isset($_GET['maketoken']) && isset($_GET['name'])) {
+elseif (isset($_GET['maketoken']) && isset($_GET['name']) && $_SERVER['SERVER_PORT'] != 89) {
 	$maketoken  = $_GET['maketoken'];
 	$name = $_GET['name'];
 

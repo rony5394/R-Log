@@ -4,61 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Website</title>
+    <link rel="stylesheet" type="text/css" href="<|static_import_url|>/Main.css">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f8f8;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            color: #333;
-        }
-
-        hr {
-            margin: 20px 0;
-            border: none;
-            border-top: 1px solid #ccc;
-        }
-
-        p {
-            color: #555;
-            margin-bottom: 20px;
-        }
-
-        form {
-            margin-top: 20px;
-        }
-
-        input[type="submit"] {
-            background-color: #3498db;
-            color: #fff;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 15px;
-            font-size: 1em;
-            transition: background-color 0.3s ease;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #2980b9;
-        }
-
-        input {
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease;
-        }
-
-        input:focus {
-            border-color: #3498db;
-        }
 
         .admin-panel {
             background-color: #fff;
@@ -75,8 +22,9 @@
     <p>Account Type: <|user->permission|></p>
     <p>ID: <|user->userid|></p>
     <form method="post" action="index.php">
-        <input type="submit" name="logout" value="Logout">
+        <input class="red-button" type="submit" name="logout" value="Logout">
     </form>
     <|adminPanel|>
+    <iframe src="html/todo.html" style="border: none;"></iframe>
 </body>
 </html>

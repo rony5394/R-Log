@@ -61,21 +61,52 @@ if (isset($_POST['delete']) && "./totp/".is_file($_POST['delete'] . ".png")) {
     unlink("./totp/".$_POST['delete'].".png");
 }
 
+function removeDir($dir) {
+    if (!is_dir($dir)) {
+        return false;
+    }
+
+    // Open the directory
+    $handle = opendir($dir);
+
+    // Loop through the directory
+    while (false !== ($item = readdir($handle))) {
+        if ($item != "." && $item != "..") {
+            // If the item is a directory, recursively call removeDir()
+            if (is_dir($dir . '/' . $item)) {
+                removeDir($dir . '/' . $item);
+            } else {
+                // If the item is a file, delete it
+                unlink($dir . '/' . $item);
+            }
+        }
+    }
+
+    // Close the directory handle
+    closedir($handle);
+
+    // Remove the directory itself
+    if (rmdir($dir)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function generateQrSecretKey(){
 
 $secretKey = generateSecretKey();
-//$secretKey = "5UFGIAXBJI5BPUSP";
+$secretKey = "5UFGIAXBJI5BPUSP";
 echo("KEY: $secretKey\n");
 
 $otp = generateTOTP($secretKey);
 
 echo "Current OTP: $otp\n";
 $qrOtp = "otpauth://totp/loginApi:tester?secret=$secretKey&issuer=tester";
-if (!is_dir("./totp")) {
-    mkdir("./totp");
-}
+removeDir("./temp");
+mkdir("temp");
 $randomName = rand();
-QRcode::png($qrOtp,"./totp/$randomName.png");echo("<img src='./totp/$randomName.png'>");
+QRcode::png($qrOtp, "temp/$randomName.png");echo("<img src='temp/$randomName.png'></img>");
 }
-
+generateQrSecretKey();
 ?>
