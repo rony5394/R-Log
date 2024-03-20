@@ -38,13 +38,13 @@ function requestLog($token,$type)
 function createApiUser($name){
 	global $conn;
 	$str=rand();
-	$generated_token = md5($str);
+	$generated_token = sha256($str);
 	$hashed_token = encryptToken($generated_token);
 	$sql = "INSERT INTO API_USERS (name, token)
 	VALUES ('$name','$hashed_token')";
 
 	if ($conn->query($sql) === false) {
-  		echo "Error: " . $sql . "<br>" . $conn->error;
+  		echo(htmlspecialchars("Error: " . $sql . "<br>" . $conn->error));
 	}
 
 	$sql = "CREATE TABLE $hashed_token (
