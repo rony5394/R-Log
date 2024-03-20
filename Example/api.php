@@ -278,6 +278,6 @@ $LoginGui = "<!DOCTYPE html>
 ";
 
 if (isset($_GET['openLoginPopup']) && $loginPopoutFeature == true) {
-    echo htmlspecialchars($LoginGui);
+    echo($LoginGui);
 }
 ?>

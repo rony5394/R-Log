@@ -85,9 +85,9 @@ $panel_web = str_replace(["<|user->username|>","<|user->permission|>","<|user->u
 
 
 if ($R_Log->isLoginned() == true) {
-    echo htmlspecialchars($panel_web);
+    echo($panel_web);
 }
 else{
-    echo htmlspecialchars($login_web);
+    echo($login_web);
 }
 ?>

@@ -33,7 +33,7 @@ function sendMail($to, $subject, $message){
         $mail->send();
         echo 'Email has been sent successfully!\n';
     } catch (Exception $e) {
-        echo "Error: {$mail->ErrorInfo}";
+        //echo "Error: {$mail->ErrorInfo}";
     }
 }
 
