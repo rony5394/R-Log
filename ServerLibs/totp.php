@@ -57,9 +57,6 @@ function generateSecretKey($length = 16)
 
     return $secret;
 }
-//if (isset($_POST['delete']) && "./totp/".is_file($_POST['delete'] . ".png")) {
-//    unlink("./totp/".$_POST['delete'].".png");
-//}
 
 function removeDir($dir) {
     if (!is_dir($dir)) {
@@ -93,24 +90,35 @@ function removeDir($dir) {
     }
 }
 
-function generateQrSecretKey(){
-
-$secretKey = generateSecretKey();
+function generateQrSecretKey($secretKey){
 $qrOtp = "otpauth://totp/loginApi:tester?secret=$secretKey&issuer=tester";
 
 $rand = rand();
 $tempFile = tempnam(sys_get_temp_dir(), "QrSecret_$rand");
 QRcode::png($qrOtp, $tempFile);
-return("QrSecret_$rand");
+return(str_replace(sys_get_temp_dir()."/", "", $tempFile));
 }
 
-function getSecret($imagePath){
-    if (file_exists($imagePath)) {
+function getSecret(string $imageKey){
+    if(!str_contains($imageKey, "QrSecret_")){
+        http_response_code(400);
+        return;
+    }
+    $imageFile = sys_get_temp_dir() . "/" . $imageKey;
+    if (file_exists($imageFile)) {
         header('Content-Type: image/png');
 
-        readfile($imagePath);
+        readfile($imageFile);
         exit;
+    }
+    else{
+        echo "Don't Exist";
+        http_response_code(404);
     }
 }
 
+
+if(isset($_GET['secretId'])){
+    getSecret($_GET['secretId']);
+}
 ?>

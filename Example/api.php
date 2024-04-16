@@ -2,8 +2,8 @@
 session_start();
 
 // Config
-$token = file_get_contents("./../secrets/api_key.txt"); 
-$apiUrl = "http://192.168.1.175/loginApi/index.php";
+$GLOBALS["token"] = file_get_contents("./../secrets/api_key.txt"); 
+$GLOBALS['apiUrl'] = "http://192.168.1.175/loginApi/index.php";
 $loginPopoutFeature = true; // Build in login Popout. Recomend using with R-Log js
 //
 
@@ -47,6 +47,30 @@ class User
         else{
             return false;
         }
+    }
+
+    public function enable2FA(string $mode){
+        $requestData = array(
+            'token' => $GLOBALS["token"],
+            'command' => 'E2FA',
+            'userid' => $userid,
+            'mode' => $mode
+        );
+
+        $response = makePostRequest($requestData);
+        return("http://192.168.1.175/loginApi/ServerLibs/totp.php?secretId=$response");
+    }
+
+    public function finish2fa(string $secret, int $code){
+        $requestData = array(
+            'token' => $GLOBALS["token"],
+            'command' => 'F2FA',
+            'userid' => $userid,
+            'secret' => $secret,
+            'code' => $code
+        );
+
+        $response = makePostRequest($requestData);
     }
 
     public function __construct($userid)
@@ -106,7 +130,7 @@ class R_Log
     public function SetPermission($userid,$perm){
         $requestData = array(
             'token' => $GLOBALS["token"],
-            'command' => 'SPERM',
+            'command' => 'SPER',
             'userid' => $userid,
             'permission' => $perm
         );
@@ -147,7 +171,7 @@ class R_Log
             'email' => $email
         );
 
-        $response = makePostRequest( $requestData);
+        $response = makePostRequest($requestData);
 
     }
 
@@ -195,7 +219,6 @@ function makePostRequest($requestData) {
     $context = stream_context_create($options);
 
     $response = file_get_contents($GLOBALS['apiUrl'], false, $context);
-    //var_dump($response);
 
     // Return the response
     return $response;

@@ -2,7 +2,8 @@
 702 - not enouch data
 703 - command not provided
 704 - command is invalid
-705 - api server / api DB error
+705 - api error
 706 - invalid user id
 707 - token not provided
 708 - already enabled 2fa
+709 - invalid 2fa mode

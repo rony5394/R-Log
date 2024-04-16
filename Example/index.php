@@ -81,7 +81,7 @@ if ($R_Log->isLoginned() == true) {
 
 $login_web = str_replace(["<|js_import_url|>"], [$js_import_url], file_get_contents("./html/login.html"));
 
-$panel_web = str_replace(["<|user->username|>","<|user->permission|>","<|user->userid|>","<|adminPanel|>", "<|static_import_url|>"], [$user->username,$user->permission,$user->userid,$adminPanel, $static_import_url], file_get_contents("./html/panel.html"));
+$panel_web = str_replace(["<|user->username|>","<|user->permission|>","<|user->userid|>","<|adminPanel|>", "<|static_import_url|>","<|2fa_src|>"], [$user->username,$user->permission,$user->userid,$adminPanel, $static_import_url,$MFA_URL], file_get_contents("./html/panel.html"));
 
 
 if ($R_Log->isLoginned() == true) {

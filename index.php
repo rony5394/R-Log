@@ -19,9 +19,17 @@ function encryptToken($token){
 
 function error($error_code){
 	global $conn;
-	echo "ERROR:". $error_code;
+	responce(null, $error_code);
 	$conn->close();
 	exit();
+}
+
+function responce(string $data="null", int $error=0){
+	echo($data);
+
+	//$json = json_encode(array('data' => $data, 'error' => $error));
+
+	//echo $json;
 }
 
 function requestLog($token,$type)
@@ -30,7 +38,7 @@ function requestLog($token,$type)
 	$sql = "INSERT INTO REQUEST_HISTORY (token,request_type)
 	VALUES ('$token', '$type')";
 	if ($conn->query($sql) === false) {
-  		echo "Error creating Request Log: " . $conn->error;
+  		//DEBUG? echo "Error creating Request Log: " . $conn->error;
   		exit();
 	}
 }
@@ -44,7 +52,7 @@ function createApiUser($name){
 	VALUES ('$name','$hashed_token')";
 
 	if ($conn->query($sql) === false) {
-  		echo(htmlspecialchars("Error: " . $sql . "<br>" . $conn->error));
+  		//DEBUG:? echo(htmlspecialchars("Error: " . $sql . "<br>" . $conn->error));
 	}
 
 	$sql = "CREATE TABLE $hashed_token (
@@ -59,7 +67,7 @@ function createApiUser($name){
 	)";
 
 	if ($conn->query($sql) === false) {
-  		echo "Error creating table: " . $conn->error;
+  		//DEBUG?echo "Error creating table: " . $conn->error;
   		exit();
 	}
 	return $generated_token;
@@ -74,7 +82,7 @@ function getUserInfo($api_token,$userid){
 	$result = $conn->query($sql);
 	if ($result->num_rows > 0) {
 		while($row = $result->fetch_assoc()){
-			echo(json_encode(array('userid' => $userid, 'username' => $row['username'], 'email' => $row['email'], 'permission' => $row['permissions'], 'reg_date' => $row['reg_date'])));
+			responce(json_encode(array('userid' => $userid, 'username' => $row['username'], 'email' => $row['email'], 'permission' => $row['permissions'], 'reg_date' => $row['reg_date'])));
 		}
 		return true;
 	}
@@ -121,7 +129,7 @@ function registerUser($api_token, $username, $password, $email){
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
-        echo "ALERTY USED";
+        responce("ALERTY USED");
         return;
     }
 
@@ -132,7 +140,7 @@ function registerUser($api_token, $username, $password, $email){
         exit();
     }
 
-    echo "REGISTERED";
+    responce("REGISTERED");
 }
 
 function unregisterUser($api_token,$username,$email){
@@ -146,7 +154,7 @@ function unregisterUser($api_token,$username,$email){
 	  	echo "Error: " . $sql . "<br>" . $conn->error;
   		exit();
 	}
-	echo "UNREGISTERED";
+	responce("UNREGISTERED");
 }
 
 function setUserPermission($api_token,$userid,$new_perm){
@@ -156,10 +164,10 @@ function setUserPermission($api_token,$userid,$new_perm){
 	$new_perm = mysqli_real_escape_string($new_perm);
 	$sql = "UPDATE $api_token SET permissions='$new_perm' WHERE id='$userid'";
 	if ($conn->query($sql) === false) {
-	  	echo "Error: " . $sql . "<br>" . $conn->error;
+	  	//DEBUG?echo "Error: " . $sql . "<br>" . $conn->error;
   		exit();
 	}
-	echo "[OK]";
+	responce("[OK]");
 }
 
 function enable2fa($api_token,$userid,$mode)
@@ -170,22 +178,78 @@ function enable2fa($api_token,$userid,$mode)
 	$mode = mysqli_real_escape_string($conn,$mode);
 
 	// Check if user already has mfa enabled
-	$sql = "SELECT id, mfa FROM $api_token WHERE userid='$userid'";
+	$sql = "SELECT id, mfa FROM $api_token WHERE id='$userid'";
 	$result = $conn->query($sql);
 
-	if ($result->num_rows != 1)
+	if ($result->num_rows < 1)
 	{
 		error(706);
+		exit();
 	}
 	while($row = $result->fetch_assoc())
 	{
 		if ($row['mfa'] != "disabled") {
 			error(708);
+			exit();
 		}
 	}
 
 	include "./ServerLibs/totp.php";
+
+	$secret = generateSecretKey();
+
+	switch ($mode) {
+		case 'raw':
+			echo($secret);
+			break;
+		case 'qr':
+			echo(generateQrSecretKey($secret));
+			break;
+
+		default:
+			error(709);
+			break;
+	}
 	
+}
+
+function finish2fa($api_token, $userid, $secret, $code){
+	global $conn;
+
+	$api_token = mysqli_real_escape_string($conn, $api_token);
+	$userid = mysqli_real_escape_string($conn, $userid);
+	$secret = mysqli_real_escape_string($conn, $secret);
+	$code = mysqli_real_escape_string($conn, $code);
+
+	include "./ServerLibs/totp.php";
+	if(generateTOTP($secret) != $code){
+		echo("Invalid Code");
+		exit;
+	}
+
+	$sql = "UPDATE $api_token SET mfa = '$secret' WHERE id = $userid";
+
+	if ($conn->query($sql) === FALSE){
+		error(705);
+	}
+
+	echo("SUCCESS");
+
+}
+
+function disable2fa($api_token, $userid){
+	global $conn;
+
+	$api_token = mysqli_real_escape_string($conn, $api_token);
+	$userid = mysqli_real_escape_string($userid);
+
+	$sql = "UPDATE $api_token SET mfa = 'disabled' WHERE id = $userid";
+
+	if ($conn->query($sql) === FALSE){
+		error(705);
+	}
+
+	echo("SUCCESS");
 }
 
 function checkApiKey($api_token){
@@ -227,12 +291,15 @@ if(isset($_POST['command']) && (isset($_POST['token']) || $_SERVER['PHP_AUTH_USE
 			if (isset($_POST['username']) && isset($_POST['password'])) {
 				$login = loginUser($api_token,$_POST['username'],$_POST['password']);
 				if(loginUser($api_token,$_POST['username'],$_POST['password']) != false) {
-					echo json_encode(array('login' => true,'userid' => $login));
+					responce(json_encode(array('login' => true,'userid' => $login)));
 					requestLog($api_token,"LOG");
 				}
 				else{
-					echo "[NO]";
+					responce("[NO]");
 				}
+			}
+			else{
+				error(702);
 			}
 		break;
 		case 'UNREG':
@@ -243,7 +310,7 @@ if(isset($_POST['command']) && (isset($_POST['token']) || $_SERVER['PHP_AUTH_USE
 				error(702);
 			}
 			break;
-		case 'SPERM':
+		case 'SPER':
 		if (isset($_POST['userid']) && isset($_POST['permission'])) {
 				setUserPermission($api_token,$_POST['userid'],$_POST['permission']);
 			}else{
@@ -265,7 +332,16 @@ if(isset($_POST['command']) && (isset($_POST['token']) || $_SERVER['PHP_AUTH_USE
 		case 'E2FA':
 			if(isset($_POST['userid']) && isset($_POST['mode']))
 			{
-
+				enable2fa($api_token,$_POST['userid'],$_POST['mode']);
+			}
+			else
+			{
+				error(702);
+			}
+		break;
+		case 'F2FA':
+			if (isset($_POST['userid']) && isset($_POST['secret']) && isset($_POST['code'])) {
+				finish2fa($api_token, $_POST['userid'], $_POST['secret'], $_POST['code']);
 			}
 			else
 			{
